@@ -308,10 +308,10 @@ def find_by_telegram_id(DATABASE_NAME: str, TELEGRAM_ID: str):
     df = pd.read_excel(DATABASE_NAME, sheet_name=None)
     results = []
     for sheet_name, data in df.items():
-        if 'Name' in data.columns and 'Telegram ID' in data.columns:
-            filtered_df = data[data['Telegram ID'] == TELEGRAM_ID]
+        if "Name" in data.columns and "Telegram ID" in data.columns:
+            filtered_df = data[data["Telegram ID"] == TELEGRAM_ID]
             if not filtered_df.empty:
-                student_name = filtered_df.iloc[0]['Name']
+                student_name = filtered_df.iloc[0]["Name"]
                 results.append(student_name)
                 results.append(sheet_name)
     if results:
