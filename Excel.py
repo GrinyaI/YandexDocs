@@ -126,6 +126,20 @@ def find_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
     except:
         raise MyError("Ошибка при поиске студента")
 
+def authorization_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
+    """
+        :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
+        :param GROUP: имя группы в формате "ПИН-221"
+        :param NAME: имя студента в формате "Фролов Григорий"
+        :return: True, если студент найден; False, если студент не найден
+    """
+    download_database(DATABASE_NAME=DATABASE_NAME)
+    if find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
+        delete_file(DATABASE_NAME=DATABASE_NAME)
+        return True
+    else:
+        delete_file(DATABASE_NAME=DATABASE_NAME)
+        return False
 
 def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str) -> bool:
     """
