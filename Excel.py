@@ -1,6 +1,7 @@
 import pandas as pd
 import pandas.core.frame
 import warnings
+from Yandex import *
 from CONFIG import MyError
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -135,8 +136,10 @@ def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str) -> b
     :return: True, если GitHub студента изменён, или не нуждается в
     изменении; False, если в ссылке на GitHub есть ошибки/опечатки, или студент не найден
     """
+    download_database(DATABASE_NAME=DATABASE_NAME)
     df = read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     if not find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
+        delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
     else:
         if NEW_LINK.split("/")[0] == "https:" and NEW_LINK.split("/")[2] == "github.com":
@@ -145,14 +148,20 @@ def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str) -> b
                 if OLD_LINK != NEW_LINK:
                     df.loc[(df["Name"] == NAME.title()), "GitHub"] = NEW_LINK
                     save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+                    delete_database(DATABASE_NAME=DATABASE_NAME)
+                    upload_database(DATABASE_NAME=DATABASE_NAME)
+                    delete_file(DATABASE_NAME=DATABASE_NAME)
                     print(f"GitHub студента {NAME.title()} изменён")
                     return True
                 else:
+                    delete_file(DATABASE_NAME=DATABASE_NAME)
                     print(f"GitHub студента {NAME.title()} не нуждается в изменении")
                     return True
             except:
+                delete_file(DATABASE_NAME=DATABASE_NAME)
                 raise MyError("Ошибка при замене GitHub")
         else:
+            delete_file(DATABASE_NAME=DATABASE_NAME)
             print(f"Ссылка на GitHub студента {NAME.title()} указана неверно")
             return False
 
@@ -164,16 +173,20 @@ def show_me_my_points(DATABASE_NAME: str, GROUP: str, NAME: str):
     :param NAME: имя студента в формате "Фролов Григорий"
     :return: Возвращает кол-во баллов студента; False, если студент не найден
     """
+    download_database(DATABASE_NAME=DATABASE_NAME)
     df = read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     if not find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
+        delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
     else:
         try:
             student = df[df["Name"] == NAME]
             points = student["Points"].values[0]
+            delete_file(DATABASE_NAME=DATABASE_NAME)
             print(f"Баллы студента {NAME}: {points}")
             return points
         except:
+            delete_file(DATABASE_NAME=DATABASE_NAME)
             raise MyError("Ошибка при отображении баллов")
 
 
@@ -185,8 +198,10 @@ def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: str, L
     :param LAB_WORK: название лабораторной работы в формате "ЛР1"
     :return: True, если для работы {LAB_WORK} установлен статус "Готово к проверке", или работа уже принята; False, если студент не найден
     """
+    download_database(DATABASE_NAME=DATABASE_NAME)
     df = read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     if not find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
+        delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
     else:
         new_status = "Готово к проверке"
@@ -195,12 +210,17 @@ def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: str, L
             if student[LAB_WORK].values[0] != "Принято":
                 df.loc[(df["Name"] == NAME.title()), LAB_WORK] = new_status
                 save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+                delete_database(DATABASE_NAME=DATABASE_NAME)
+                upload_database(DATABASE_NAME=DATABASE_NAME)
+                delete_file(DATABASE_NAME=DATABASE_NAME)
                 print(f"Для работы {LAB_WORK}, студента {NAME.title()}, установлен статус {new_status}")
                 return True
             else:
+                delete_file(DATABASE_NAME=DATABASE_NAME)
                 print("Работа уже принята")
                 return True
         except:
+            delete_file(DATABASE_NAME=DATABASE_NAME)
             raise MyError(f"Ошибка при смене статуса на {new_status}")
 
 
@@ -212,8 +232,10 @@ def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRAM_ID: 
     :param NEW_TELEGRAM_ID: новый Telegram ID студента
     :return: True, если Telegram ID изменён, или не нуждается в изменении; False, если студент не найден
     """
+    download_database(DATABASE_NAME=DATABASE_NAME)
     df = read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     if not find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
+        delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
     else:
         try:
@@ -221,12 +243,17 @@ def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRAM_ID: 
             if OLD_TELEGRAM_ID != NEW_TELEGRAM_ID:
                 df.loc[(df["Name"] == NAME.title()), "Telegram ID"] = str(NEW_TELEGRAM_ID)
                 save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+                delete_database(DATABASE_NAME=DATABASE_NAME)
+                upload_database(DATABASE_NAME=DATABASE_NAME)
+                delete_file(DATABASE_NAME=DATABASE_NAME)
                 print(f"Telegram ID студента {NAME.title()} изменён")
                 return True
             else:
+                delete_file(DATABASE_NAME=DATABASE_NAME)
                 print(f"Telegram ID студента {NAME.title()} не нуждается в изменении")
                 return True
         except:
+            delete_file(DATABASE_NAME=DATABASE_NAME)
             raise MyError("Ошибка при усатновке/смене Telegram ID")
 
 
@@ -238,14 +265,18 @@ def check_status(DATABASE_NAME: str, GROUP: str, NAME: str, LAB_WORK: str):
     :param LAB_WORK: название лабораторной работы в формате "ЛР1"
     :return: Возвращает статус лабораторной работы {LAB_WORK}; False, если студент не найден
     """
+    download_database(DATABASE_NAME=DATABASE_NAME)
     df = read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     if not find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
+        delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
     else:
         try:
             student = df[df["Name"] == NAME.title()]
             status = student[LAB_WORK].values[0]
+            delete_file(DATABASE_NAME=DATABASE_NAME)
             print(f"Статус работы {LAB_WORK}, студента {NAME.title()}: {status}")
             return status
         except:
+            delete_file(DATABASE_NAME=DATABASE_NAME)
             raise MyError("Ошибка при отображении статуса работы")
