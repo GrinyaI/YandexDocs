@@ -126,6 +126,7 @@ def find_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
     except:
         raise MyError("Ошибка при поиске студента")
 
+
 def authorization_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
     """
         :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
@@ -140,6 +141,7 @@ def authorization_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
     else:
         delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
+
 
 def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str) -> bool:
     """
@@ -294,3 +296,29 @@ def check_status(DATABASE_NAME: str, GROUP: str, NAME: str, LAB_WORK: str):
         except:
             delete_file(DATABASE_NAME=DATABASE_NAME)
             raise MyError("Ошибка при отображении статуса работы")
+
+
+def find_by_telegram_id(DATABASE_NAME: str, TELEGRAM_ID: str):
+    """
+    :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
+    :param TELEGRAM_ID: Telegram ID студента
+    :return: Возвращает список с именем студента(0) и его грппой(1); False, если студент не найден
+    """
+    download_database(DATABASE_NAME=DATABASE_NAME)
+    df = pd.read_excel(DATABASE_NAME, sheet_name=None)
+    results = []
+    for sheet_name, data in df.items():
+        if 'Name' in data.columns and 'Telegram ID' in data.columns:
+            filtered_df = data[data['Telegram ID'] == TELEGRAM_ID]
+            if not filtered_df.empty:
+                student_name = filtered_df.iloc[0]['Name']
+                results.append(student_name)
+                results.append(sheet_name)
+    if results:
+        print(f"Студент {results[0]} найден в группе {results[1]}")
+        delete_file(DATABASE_NAME=DATABASE_NAME)
+        return results
+    else:
+        print("Студент не найден по заданному Telegram ID")
+        delete_file(DATABASE_NAME=DATABASE_NAME)
+        return False
