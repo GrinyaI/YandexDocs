@@ -14,10 +14,10 @@ def download_database(DATABASE_NAME: str) -> bool:
 
         params = {'path': "/" + DATABASE_NAME}
 
-        response = requests.get(url, params=params, headers=headers)
+        response = requests.get(url, params=params, headers=HEADERS)
 
         download_url = response.json()['href']
-        download_response = requests.get(download_url, params=params, headers=headers)
+        download_response = requests.get(download_url, params=params, headers=HEADERS)
         print("Статус скачивания: " + str(download_response.status_code))
         with open(DATABASE_NAME, 'wb') as file:
             file.write(download_response.content)
@@ -42,14 +42,14 @@ def upload_database(DATABASE_NAME: str) -> bool:
 
         params = {'path': "/" + DATABASE_NAME}
 
-        response = requests.get(url, params=params, headers=headers)
+        response = requests.get(url, params=params, headers=HEADERS)
         if response.status_code == 423:
             print("База данных редактируется преподавателем")
             return False
         upload_url = response.json()['href']
 
         with open(DATABASE_NAME, 'rb') as file:
-            response = requests.put(upload_url, data=file, headers=headers)
+            response = requests.put(upload_url, data=file, headers=HEADERS)
             print("Статус загрузки: " + str(response.status_code))
         return True
     except requests.exceptions.HTTPError as error:
@@ -68,11 +68,11 @@ def delete_database(DATABASE_NAME: str) -> bool:
     данных редактируется преподавателем
     """
     try:
-        url = "https://cloud-api.yandex.net/v1/disk/resources"
+        url = "https://cloud-api.yandex.net/v1/disk/resources?force_async=true&permanently=true"
 
         params = {'path': "/" + DATABASE_NAME}
 
-        response = requests.delete(url, params=params, headers=headers)
+        response = requests.delete(url, params=params, headers=HEADERS)
         if response.status_code == 423:
             print("База данных редактируется преподавателем")
             return False
