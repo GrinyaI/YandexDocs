@@ -1,6 +1,7 @@
 import pandas as pd
 import pandas.core.frame
 import warnings
+import numpy as np
 from Yandex import *
 from CONFIG import MyError
 
@@ -75,7 +76,7 @@ def _read_excel_bd(DATABASE_NAME: str, GROUP: str):
         :return: Возвращает DataFrame с данными из эксель таблицы
     """
     try:
-        return pd.read_excel(DATABASE_NAME, sheet_name=GROUP.upper())
+        return pd.read_excel(DATABASE_NAME, sheet_name=GROUP.upper(), engine="openpyxl")
     except FileNotFoundError:
         raise MyError("Файл не найден")
     except:
@@ -275,13 +276,12 @@ def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRAM_ID: 
             raise MyError("Ошибка при усатновке/смене Telegram ID")
 
 
-def check_status(DATABASE_NAME: str, GROUP: str, NAME: str, LAB_WORK: str):
+def check_status(DATABASE_NAME: str, GROUP: str, NAME: str):
     """
     :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
     :param GROUP: имя группы в формате "ПИН-221"
     :param NAME: имя студента в формате "Фролов Григорий"
-    :param LAB_WORK: название лабораторной работы в формате "ЛР1"
-    :return: Возвращает статус лабораторной работы {LAB_WORK}; False, если студент не найден
+    :return: Возвращает словарь со статусами лабораторных работ и общим количеством баллов; False, если студент не найден
     """
     download_database(DATABASE_NAME=DATABASE_NAME)
     df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
@@ -291,9 +291,16 @@ def check_status(DATABASE_NAME: str, GROUP: str, NAME: str, LAB_WORK: str):
     else:
         try:
             student = df[df["Name"] == NAME.title()]
-            status = student[LAB_WORK].values[0]
+            status = {}
+            for i in range(0, _kolvo_lab(DF=df)):
+                status[f"ЛР{i+1}"] = student[f"ЛР{i + 1}"].values[0]
+            count = show_me_my_points(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME)
+            if count != "nan":
+                status["Баллы"] = count
+            else:
+                status["Баллы"] = "-"
             delete_file(DATABASE_NAME=DATABASE_NAME)
-            print(f"Статус работы {LAB_WORK}, студента {NAME.title()}: {status}")
+            print(f"Статус работ студента {NAME.title()}: {status}")
             return status
         except:
             delete_file(DATABASE_NAME=DATABASE_NAME)
