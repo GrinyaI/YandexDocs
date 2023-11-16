@@ -1,7 +1,6 @@
 import pandas as pd
 import pandas.core.frame
 import warnings
-import numpy as np
 from Yandex import *
 from CONFIG import MyError
 
@@ -92,9 +91,9 @@ def _save_excel_bd(DF: pandas.core.frame.DataFrame, DATABASE_NAME: str, GROUP: s
     """
     excel_header = ["Telegram ID", "Name", "GitHub"] + [f"ЛР{i}" for i in range(1, _kolvo_lab(DF=DF) + 1)] + [
         "Points"] + ["" for _ in range(0, _kolvo_space(DF=DF))] + ["Подсчёт 1", "Подсчёт 2", "Подсчёт 3",
-                                                                  "Подсчёт 4", "Подсчёт 5", "Подсчёт 6",
-                                                                  "Подсчёт 7",
-                                                                  "Подсчёт 8"] + ["Статусы"]
+                                                                   "Подсчёт 4", "Подсчёт 5", "Подсчёт 6",
+                                                                   "Подсчёт 7",
+                                                                   "Подсчёт 8"] + ["Статусы"]
     try:
         _set_formula(DF=DF)
     except:
@@ -293,7 +292,7 @@ def check_status(DATABASE_NAME: str, GROUP: str, NAME: str):
             student = df[df["Name"] == NAME.title()]
             status = {}
             for i in range(0, _kolvo_lab(DF=df)):
-                status[f"ЛР{i+1}"] = student[f"ЛР{i + 1}"].values[0]
+                status[f"ЛР{i + 1}"] = student[f"ЛР{i + 1}"].values[0]
             count = show_me_my_points(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME)
             if count != "nan":
                 status["Баллы"] = count
