@@ -18,6 +18,7 @@ def _kolvo_lab(DF: pandas.core.frame.DataFrame) -> int:
     except:
         raise MyError("Ошибка в расчёте кол-ва лабораторных работ")
 
+
 def _set_formula(DF: pandas.core.frame.DataFrame):
     """
         :param DF: DataFrame с данными из эксель таблицы
