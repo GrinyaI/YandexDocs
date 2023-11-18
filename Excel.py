@@ -18,19 +18,6 @@ def _kolvo_lab(DF: pandas.core.frame.DataFrame) -> int:
     except:
         raise MyError("Ошибка в расчёте кол-ва лабораторных работ")
 
-
-def _kolvo_space(DF: pandas.core.frame.DataFrame) -> int:
-    """
-        :param DF: DataFrame с данными из эксель таблицы
-        :return: Возвращает число, являющееся кол-вом свободного пространства между столбцом "Подсчёт 1" и "Points",
-        нужно для того, чтобы не производить лишние вычисления
-    """
-    try:
-        return abs(DF.columns.get_loc('Подсчёт 1') - DF.columns.get_loc('Points')) - 1
-    except:
-        raise MyError("Ошибка в расчёте кол-ва свободных ячеек")
-
-
 def _set_formula(DF: pandas.core.frame.DataFrame):
     """
         :param DF: DataFrame с данными из эксель таблицы
