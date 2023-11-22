@@ -214,7 +214,7 @@ def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: str, L
         new_status = "Готово к проверке"
         try:
             student = df[df["Name"] == NAME.title()]
-            if student[LAB_WORK].values[0] != "Принято":
+            if student[LAB_WORK].values[0] != "Принято" and student[LAB_WORK].values[0] != "принято" and student[LAB_WORK].values[0] != "прин":
                 df.loc[(df["Name"] == NAME.title()), LAB_WORK] = new_status
                 _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
                 delete_database(DATABASE_NAME=DATABASE_NAME)
