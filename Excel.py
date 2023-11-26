@@ -185,9 +185,9 @@ def _show_me_my_points(DATABASE_NAME: str, GROUP: str, NAME: str):
         return False
     else:
         try:
-            student = df[df["Name"] == NAME]
+            student = df[df["Name"] == NAME.title()]
             points = student["Points"].values[0]
-            print(f"Баллы студента {NAME}: {points}")
+            print(f"Баллы студента {NAME.title()}: {points}")
             return points
         except:
             raise MyError("Ошибка при отображении баллов")
