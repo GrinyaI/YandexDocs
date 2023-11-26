@@ -295,7 +295,7 @@ def check_status(DATABASE_NAME: str, GROUP: str, NAME: str):
             raise MyError("Ошибка при отображении статуса работы")
 
 
-def find_by_telegram_id(DATABASE_NAME: str, TELEGRAM_ID: str):
+def find_by_telegram_id(DATABASE_NAME: str, TELEGRAM_ID: int):
     """
     :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
     :param TELEGRAM_ID: Telegram ID студента
