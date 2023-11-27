@@ -117,6 +117,12 @@ def _find_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
     except:
         raise MyError("Ошибка при поиске студента")
 
+def kolvo_lab(DATABASE_NAME: str, GROUP: str) -> int:
+    download_database(DATABASE_NAME=DATABASE_NAME)
+    df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    kolvo = _kolvo_lab(DF=df)
+    delete_file(DATABASE_NAME=DATABASE_NAME)
+    return kolvo
 
 def authorization_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
     """
