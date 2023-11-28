@@ -233,7 +233,7 @@ def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: str, L
             raise MyError(f"Ошибка при смене статуса на {new_status}")
 
 
-def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRAM_ID: str) -> bool:
+def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRAM_ID: int) -> bool:
     """
     :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
     :param GROUP: имя группы в формате "ПИН-221"
@@ -250,7 +250,7 @@ def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRAM_ID: 
         try:
             OLD_TELEGRAM_ID = df.loc[(df["Name"] == NAME.title()), "Telegram ID"].values[0]
             if OLD_TELEGRAM_ID != NEW_TELEGRAM_ID:
-                df.loc[(df["Name"] == NAME.title()), "Telegram ID"] = str(NEW_TELEGRAM_ID)
+                df.loc[(df["Name"] == NAME.title()), "Telegram ID"] = NEW_TELEGRAM_ID
                 _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
                 delete_database(DATABASE_NAME=DATABASE_NAME)
                 upload_database(DATABASE_NAME=DATABASE_NAME)
