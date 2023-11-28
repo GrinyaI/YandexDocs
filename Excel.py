@@ -159,7 +159,6 @@ def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str) -> b
             try:
                 OLD_LINK = df.loc[(df["Name"] == NAME.title()), "GitHub"].values
                 if OLD_LINK != NEW_LINK:
-
                     df.loc[(df["Name"] == NAME.title()), "GitHub"] = NEW_LINK
                     _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
                     delete_database(DATABASE_NAME=DATABASE_NAME)
