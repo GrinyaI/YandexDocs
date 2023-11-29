@@ -1,9 +1,12 @@
 import requests
 import os
+import nest_asyncio
 from CONFIG import *
 
+nest_asyncio.apply()
 
-def download_database(DATABASE_NAME: str) -> bool:
+
+async def download_database(DATABASE_NAME: str) -> bool:
     """
     Функция скачивает базу данных с Яндекс Диска
     :param DATABASE_NAME: Имя скачиваемой базы данных
@@ -30,7 +33,7 @@ def download_database(DATABASE_NAME: str) -> bool:
         return False
 
 
-def upload_database(DATABASE_NAME: str) -> bool:
+async def upload_database(DATABASE_NAME: str) -> bool:
     """
     Функция загружает базу данных на Яндекс Диск
     :param DATABASE_NAME: Имя загружаемой базы данных (обязательно должна лежать в той же папке, что и код)
@@ -60,7 +63,7 @@ def upload_database(DATABASE_NAME: str) -> bool:
         return False
 
 
-def delete_database(DATABASE_NAME: str) -> bool:
+async def delete_database(DATABASE_NAME: str) -> bool:
     """
     Функция удаляет базу данных с Яндекс Диска
     :param DATABASE_NAME: Имя удаляемой базы данных
@@ -86,7 +89,7 @@ def delete_database(DATABASE_NAME: str) -> bool:
         return False
 
 
-def delete_file(DATABASE_NAME: str) -> bool:
+async def delete_file(DATABASE_NAME: str) -> bool:
     """
     Функция удаляет временную базу данных необходимую для работы кода
     :param DATABASE_NAME: Имя удаляемой базы данных (обязательно должна лежать в той же папке, что и код)
