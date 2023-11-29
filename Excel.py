@@ -1,7 +1,6 @@
 import pandas as pd
 import pandas.core.frame
 import warnings
-import nest_asyncio
 from Yandex import *
 from CONFIG import MyError
 
@@ -39,10 +38,13 @@ def _set_if_formula(DF: pandas.core.frame.DataFrame):
     list_of_let = ["D", "E", "F", "G", "H", "I", "J", "K"]
     list_of_let_new = list_of_let[:_kolvo_lab(DF=DF)]
     try:
+        set_points = 60 / _kolvo_lab(DF=DF)
         for col in range(1, _kolvo_lab(DF=DF) + 1):
             for row in range(0, DF.shape[0]):
-                DF.loc[row, "Подсчёт " + str(col)] = '=IF(' + str(list_of_let_new[col - 1]) + str(
-                    row + 2) + '="Принято",12,0)'
+                DF.loc[row, "Подсчёт " + str(col)] = '=IF(OR(' + str(list_of_let_new[col - 1]) + str(
+                    row + 2) + '="Принято",' + str(list_of_let_new[col - 1]) + str(
+                    row + 2) + '="принято",' + str(list_of_let_new[col - 1]) + str(
+                    row + 2) + '="прин"' + f'),{int(set_points)},0)'
     except:
         raise MyError("Ошибка в занесении формул условий")
 
@@ -194,9 +196,12 @@ def _show_me_my_points(DATABASE_NAME: str, GROUP: str, NAME: str):
         return False
     else:
         try:
+            points = 0
             student = df[df["Name"] == NAME.title()]
-            points = student["Points"].values[0]
-            print(f"Баллы студента {NAME.title()}: {points}")
+            set_points = 60 / _kolvo_lab(DF=df)
+            for i in range(1, _kolvo_lab(DF=df)+1):
+                if student[f"ЛР{i}"].values[0] == "Принято" or student[f"ЛР{i}"].values[0] == "принято" or student[f"ЛР{i}"].values[0] == "прин":
+                    points += int(set_points)
             return points
         except:
             raise MyError("Ошибка при отображении баллов")
@@ -219,13 +224,13 @@ async def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: 
         new_status = "Готово к проверке"
         try:
             student = df[df["Name"] == NAME.title()]
-            if student[LAB_WORK].values[0] != "Принято" and student[LAB_WORK].values[0] != "принято" and student[LAB_WORK].values[0] != "прин":
-                df.loc[(df["Name"] == NAME.title()), LAB_WORK] = new_status
+            if student[LAB_WORK.upper()].values[0] != "Принято" and student[LAB_WORK.upper()].values[0] != "принято" and student[LAB_WORK.upper()].values[0] != "прин":
+                df.loc[(df["Name"] == NAME.title()), LAB_WORK.upper()] = new_status
                 _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
                 await delete_database(DATABASE_NAME=DATABASE_NAME)
                 await upload_database(DATABASE_NAME=DATABASE_NAME)
                 await delete_file(DATABASE_NAME=DATABASE_NAME)
-                print(f"Для работы {LAB_WORK}, студента {NAME.title()}, установлен статус {new_status}")
+                print(f"Для работы {LAB_WORK.upper()}, студента {NAME.title()}, установлен статус {new_status}")
                 return True
             else:
                 await delete_file(DATABASE_NAME=DATABASE_NAME)
@@ -285,13 +290,9 @@ async def check_status(DATABASE_NAME: str, GROUP: str, NAME: str):
         try:
             student = df[df["Name"] == NAME.title()]
             status = {}
-            for i in range(0, _kolvo_lab(DF=df)):
-                status[f"ЛР{i + 1}"] = student[f"ЛР{i + 1}"].values[0]
-            count = _show_me_my_points(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME)
-            if count != "nan":
-                status["Баллы"] = count
-            else:
-                status["Баллы"] = "-"
+            for i in range(1, _kolvo_lab(DF=df)+1):
+                status[f"ЛР{i}"] = student[f"ЛР{i}"].values[0]
+            status["Баллы"] = _show_me_my_points(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME)
             await delete_file(DATABASE_NAME=DATABASE_NAME)
             print(f"Статус работ студента {NAME.title()}: {status}")
             return status
