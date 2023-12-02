@@ -122,12 +122,14 @@ def _find_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
     except:
         raise MyError("Ошибка при поиске студента")
 
+
 async def kolvo_lab(DATABASE_NAME: str, GROUP: str) -> int:
     await download_database(DATABASE_NAME=DATABASE_NAME)
     df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     kolvo = _kolvo_lab(DF=df)
     await delete_file(DATABASE_NAME=DATABASE_NAME)
     return kolvo
+
 
 async def authorization_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
     """
@@ -199,7 +201,7 @@ def _show_me_my_points(DATABASE_NAME: str, GROUP: str, NAME: str):
             points = 0
             student = df[df["Name"] == NAME.title()]
             set_points = 60 / _kolvo_lab(DF=df)
-            for i in range(1, _kolvo_lab(DF=df)+1):
+            for i in range(1, _kolvo_lab(DF=df) + 1):
                 if student[f"ЛР{i}"].values[0] == "Принято" or student[f"ЛР{i}"].values[0] == "принято" or student[f"ЛР{i}"].values[0] == "прин":
                     points += int(set_points)
             return points
@@ -290,7 +292,7 @@ async def check_status(DATABASE_NAME: str, GROUP: str, NAME: str):
         try:
             student = df[df["Name"] == NAME.title()]
             status = {}
-            for i in range(1, _kolvo_lab(DF=df)+1):
+            for i in range(1, _kolvo_lab(DF=df) + 1):
                 status[f"ЛР{i}"] = student[f"ЛР{i}"].values[0]
             status["Баллы"] = _show_me_my_points(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME)
             await delete_file(DATABASE_NAME=DATABASE_NAME)
@@ -325,3 +327,23 @@ async def find_by_telegram_id(DATABASE_NAME: str, TELEGRAM_ID: int):
         print("Студент не найден по заданному Telegram ID")
         await delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
+
+
+async def check_github(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
+    await download_database(DATABASE_NAME=DATABASE_NAME)
+    df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
+        await delete_file(DATABASE_NAME=DATABASE_NAME)
+        return False
+    else:
+        try:
+            link = str(df.loc[(df["Name"] == NAME.title()), "GitHub"])
+            if len(link.split("/")) > 1:
+                await delete_file(DATABASE_NAME=DATABASE_NAME)
+                return True
+            else:
+                await delete_file(DATABASE_NAME=DATABASE_NAME)
+                return False
+        except:
+            await delete_file(DATABASE_NAME=DATABASE_NAME)
+            raise MyError("Ошибка при проверке GitHub")
