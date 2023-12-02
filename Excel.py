@@ -71,6 +71,8 @@ def _read_excel_bd(DATABASE_NAME: str, GROUP: str):
         return pd.read_excel(DATABASE_NAME, sheet_name=GROUP.upper(), engine="openpyxl")
     except FileNotFoundError:
         raise MyError("Файл не найден")
+    except ValueError:
+        raise MyError("Группа не найдена")
     except:
         raise MyError("Ошибка при чтении файла")
 
