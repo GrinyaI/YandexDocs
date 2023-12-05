@@ -172,11 +172,17 @@ async def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str
                 if OLD_LINK != NEW_LINK:
                     df.loc[(df["Name"] == NAME.title()), "GitHub"] = NEW_LINK
                     _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
-                    await delete_database(DATABASE_NAME=DATABASE_NAME)
-                    time.sleep(10)
-                    await upload_database(DATABASE_NAME=DATABASE_NAME)
-                    time.sleep(10)
-                    await delete_file(DATABASE_NAME=DATABASE_NAME)
+                    if await delete_database(DATABASE_NAME=DATABASE_NAME):
+                        time.sleep(10)
+                        if await upload_database(DATABASE_NAME=DATABASE_NAME):
+                            time.sleep(10)
+                            await delete_file(DATABASE_NAME=DATABASE_NAME)
+                        else:
+                            print(f"Ошибка при загрузке базы данных {DATABASE_NAME}")
+                            return False
+                    else:
+                        print(f"Ошибка при удалении базы данных {DATABASE_NAME}")
+                        return False
                     print(f"GitHub студента {NAME.title()} изменён")
                     return True
                 else:
@@ -235,11 +241,17 @@ async def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: 
             if student[LAB_WORK.upper()].values[0] != "Принято" and student[LAB_WORK.upper()].values[0] != "принято" and student[LAB_WORK.upper()].values[0] != "прин":
                 df.loc[(df["Name"] == NAME.title()), LAB_WORK.upper()] = new_status
                 _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
-                await delete_database(DATABASE_NAME=DATABASE_NAME)
-                time.sleep(10)
-                await upload_database(DATABASE_NAME=DATABASE_NAME)
-                time.sleep(10)
-                await delete_file(DATABASE_NAME=DATABASE_NAME)
+                if await delete_database(DATABASE_NAME=DATABASE_NAME):
+                    time.sleep(10)
+                    if await upload_database(DATABASE_NAME=DATABASE_NAME):
+                        time.sleep(10)
+                        await delete_file(DATABASE_NAME=DATABASE_NAME)
+                    else:
+                        print(f"Ошибка при загрузке базы данных {DATABASE_NAME}")
+                        return False
+                else:
+                    print(f"Ошибка при удалении базы данных {DATABASE_NAME}")
+                    return False
                 print(f"Для работы {LAB_WORK.upper()}, студента {NAME.title()}, установлен статус {new_status}")
                 return True
             else:
@@ -270,11 +282,17 @@ async def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRA
             if OLD_TELEGRAM_ID != NEW_TELEGRAM_ID:
                 df.loc[(df["Name"] == NAME.title()), "Telegram ID"] = NEW_TELEGRAM_ID
                 _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
-                await delete_database(DATABASE_NAME=DATABASE_NAME)
-                time.sleep(10)
-                await upload_database(DATABASE_NAME=DATABASE_NAME)
-                time.sleep(10)
-                await delete_file(DATABASE_NAME=DATABASE_NAME)
+                if await delete_database(DATABASE_NAME=DATABASE_NAME):
+                    time.sleep(10)
+                    if await upload_database(DATABASE_NAME=DATABASE_NAME):
+                        time.sleep(10)
+                        await delete_file(DATABASE_NAME=DATABASE_NAME)
+                    else:
+                        print(f"Ошибка при загрузке базы данных {DATABASE_NAME}")
+                        return False
+                else:
+                    print(f"Ошибка при удалении базы данных {DATABASE_NAME}")
+                    return False
                 print(f"Telegram ID студента {NAME.title()} изменён")
                 return True
             else:
