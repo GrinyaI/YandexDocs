@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 import pandas.core.frame
 import warnings
@@ -171,7 +173,9 @@ async def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str
                     df.loc[(df["Name"] == NAME.title()), "GitHub"] = NEW_LINK
                     _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
                     await delete_database(DATABASE_NAME=DATABASE_NAME)
+                    time.sleep(10)
                     await upload_database(DATABASE_NAME=DATABASE_NAME)
+                    time.sleep(10)
                     await delete_file(DATABASE_NAME=DATABASE_NAME)
                     print(f"GitHub студента {NAME.title()} изменён")
                     return True
@@ -232,7 +236,9 @@ async def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: 
                 df.loc[(df["Name"] == NAME.title()), LAB_WORK.upper()] = new_status
                 _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
                 await delete_database(DATABASE_NAME=DATABASE_NAME)
+                time.sleep(10)
                 await upload_database(DATABASE_NAME=DATABASE_NAME)
+                time.sleep(10)
                 await delete_file(DATABASE_NAME=DATABASE_NAME)
                 print(f"Для работы {LAB_WORK.upper()}, студента {NAME.title()}, установлен статус {new_status}")
                 return True
@@ -265,7 +271,9 @@ async def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRA
                 df.loc[(df["Name"] == NAME.title()), "Telegram ID"] = NEW_TELEGRAM_ID
                 _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
                 await delete_database(DATABASE_NAME=DATABASE_NAME)
+                time.sleep(10)
                 await upload_database(DATABASE_NAME=DATABASE_NAME)
+                time.sleep(10)
                 await delete_file(DATABASE_NAME=DATABASE_NAME)
                 print(f"Telegram ID студента {NAME.title()} изменён")
                 return True
