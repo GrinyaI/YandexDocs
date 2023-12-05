@@ -74,7 +74,6 @@ async def delete_database(DATABASE_NAME: str) -> bool:
         url = "https://cloud-api.yandex.net/v1/disk/resources?force_async=true&permanently=true"
 
         params = {'path': "/" + DATABASE_NAME}
-
         response = requests.delete(url, params=params, headers=HEADERS)
         if response.status_code == 423:
             print("База данных редактируется преподавателем")
