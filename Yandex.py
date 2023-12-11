@@ -1,3 +1,4 @@
+import time
 import requests
 import os
 import nest_asyncio
@@ -18,8 +19,10 @@ async def download_database(DATABASE_NAME: str) -> bool:
         params = {'path': "/" + DATABASE_NAME}
 
         response = requests.get(url, params=params, headers=HEADERS)
-
-        download_url = response.json()['href']
+        try:
+            download_url = response.json()['href']
+        except:
+            return False
         download_response = requests.get(download_url, params=params, headers=HEADERS)
         print("Статус скачивания: " + str(download_response.status_code))
         with open(DATABASE_NAME, 'wb') as file:
@@ -46,9 +49,11 @@ async def upload_database(DATABASE_NAME: str) -> bool:
         params = {'path': "/" + DATABASE_NAME}
 
         response = requests.get(url, params=params, headers=HEADERS)
-        if response.status_code == 423:
-            print("База данных редактируется преподавателем")
-            return False
+        StatusCode = response.status_code
+        while StatusCode == 423:
+            time.sleep(5)
+            response = requests.get(url, params=params, headers=HEADERS)
+            StatusCode = response.status_code
         upload_url = response.json()['href']
 
         with open(DATABASE_NAME, 'rb') as file:
@@ -74,6 +79,7 @@ async def delete_database(DATABASE_NAME: str) -> bool:
         url = "https://cloud-api.yandex.net/v1/disk/resources?force_async=true&permanently=true"
 
         params = {'path': "/" + DATABASE_NAME}
+
         response = requests.delete(url, params=params, headers=HEADERS)
         if response.status_code == 423:
             print("База данных редактируется преподавателем")

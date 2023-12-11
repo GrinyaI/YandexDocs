@@ -1,5 +1,3 @@
-import time
-
 import pandas as pd
 import pandas.core.frame
 import warnings
@@ -114,7 +112,10 @@ def _find_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
     :param NAME: имя студента в формате "Фролов Григорий"
     :return: True, если студент найден; False, если студент не найден
     """
-    df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    try:
+        df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    except:
+        return False
     filtered_df = df.loc[df["Name"] == NAME.title()]
     try:
         if filtered_df.empty:
@@ -142,7 +143,10 @@ async def authorization_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bo
         :param NAME: имя студента в формате "Фролов Григорий"
         :return: True, если студент найден; False, если студент не найден
     """
-    await download_database(DATABASE_NAME=DATABASE_NAME)
+    var = await download_database(DATABASE_NAME=DATABASE_NAME)
+    if not var:
+        print("База данных не найдена")
+        return False
     if _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
         await delete_file(DATABASE_NAME=DATABASE_NAME)
         return True
@@ -151,7 +155,7 @@ async def authorization_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bo
         return False
 
 
-async def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str) -> bool:
+async def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str) -> str:
     """
     :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
     :param GROUP: имя группы в формате "ПИН-221"
@@ -161,10 +165,13 @@ async def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str
     изменении; False, если в ссылке на GitHub есть ошибки/опечатки, или студент не найден
     """
     await download_database(DATABASE_NAME=DATABASE_NAME)
-    df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    try:
+        df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    except:
+        return "Возможен ввод некорректных данных, попробуйте снова"
     if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
         await delete_file(DATABASE_NAME=DATABASE_NAME)
-        return False
+        return "Студент не найден"
     else:
         if NEW_LINK.split("/")[0] == "https:" and NEW_LINK.split("/")[2] == "github.com":
             try:
@@ -172,30 +179,23 @@ async def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str
                 if OLD_LINK != NEW_LINK:
                     df.loc[(df["Name"] == NAME.title()), "GitHub"] = NEW_LINK
                     _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
-                    if await delete_database(DATABASE_NAME=DATABASE_NAME):
-                        time.sleep(10)
-                        if await upload_database(DATABASE_NAME=DATABASE_NAME):
-                            time.sleep(10)
-                            await delete_file(DATABASE_NAME=DATABASE_NAME)
-                        else:
-                            print(f"Ошибка при загрузке базы данных {DATABASE_NAME}")
-                            return False
-                    else:
-                        print(f"Ошибка при удалении базы данных {DATABASE_NAME}")
-                        return False
-                    print(f"GitHub студента {NAME.title()} изменён")
-                    return True
+                    var = await delete_database(DATABASE_NAME=DATABASE_NAME)
+                    if not var:
+                        print("Не удалось удалить базу данных")
+                        return "Данные редактируются преподавателем, попробуйте позже"
+                    await upload_database(DATABASE_NAME=DATABASE_NAME)
+                    await delete_file(DATABASE_NAME=DATABASE_NAME)
+                    return f"GitHub студента {NAME.title()} изменён"
                 else:
                     await delete_file(DATABASE_NAME=DATABASE_NAME)
-                    print(f"GitHub студента {NAME.title()} не нуждается в изменении")
-                    return True
+                    return f"GitHub студента {NAME.title()} не нуждается в изменении"
             except:
                 await delete_file(DATABASE_NAME=DATABASE_NAME)
-                raise MyError("Ошибка при замене GitHub")
+                print("Ошибка при замене github")
+                return "Возможен ввод некорректных данных или данные редактируются преподавателем, попробуйте позже"
         else:
             await delete_file(DATABASE_NAME=DATABASE_NAME)
-            print(f"Ссылка на GitHub студента {NAME.title()} указана неверно")
-            return False
+            return f"Ссылка на GitHub студента {NAME.title()} указана неверно"
 
 
 def _show_me_my_points(DATABASE_NAME: str, GROUP: str, NAME: str):
@@ -214,14 +214,15 @@ def _show_me_my_points(DATABASE_NAME: str, GROUP: str, NAME: str):
             student = df[df["Name"] == NAME.title()]
             set_points = 60 / _kolvo_lab(DF=df)
             for i in range(1, _kolvo_lab(DF=df) + 1):
-                if student[f"ЛР{i}"].values[0] == "Принято" or student[f"ЛР{i}"].values[0] == "принято" or student[f"ЛР{i}"].values[0] == "прин":
+                if student[f"ЛР{i}"].values[0] == "Принято" or student[f"ЛР{i}"].values[0] == "принято" or \
+                        student[f"ЛР{i}"].values[0] == "прин":
                     points += int(set_points)
             return points
         except:
             raise MyError("Ошибка при отображении баллов")
 
 
-async def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: str, LAB_WORK: str) -> bool:
+async def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: str, LAB_WORK: str) -> str:
     """
     :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
     :param GROUP: имя группы в формате "ПИН-221"
@@ -229,38 +230,31 @@ async def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: 
     :param LAB_WORK: название лабораторной работы в формате "ЛР1"
     :return: True, если для работы {LAB_WORK} установлен статус "Готово к проверке", или работа уже принята; False, если студент не найден
     """
-    await download_database(DATABASE_NAME=DATABASE_NAME)
+    var = await download_database(DATABASE_NAME=DATABASE_NAME)
+    if not var:
+        print("База данных не найдена")
+        return "Данные редактируются, попробуйте позже"
     df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
         await delete_file(DATABASE_NAME=DATABASE_NAME)
-        return False
+        return "Студент не найден"
     else:
         new_status = "Готово к проверке"
-        try:
-            student = df[df["Name"] == NAME.title()]
-            if student[LAB_WORK.upper()].values[0] != "Принято" and student[LAB_WORK.upper()].values[0] != "принято" and student[LAB_WORK.upper()].values[0] != "прин":
-                df.loc[(df["Name"] == NAME.title()), LAB_WORK.upper()] = new_status
-                _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
-                if await delete_database(DATABASE_NAME=DATABASE_NAME):
-                    time.sleep(10)
-                    if await upload_database(DATABASE_NAME=DATABASE_NAME):
-                        time.sleep(10)
-                        await delete_file(DATABASE_NAME=DATABASE_NAME)
-                    else:
-                        print(f"Ошибка при загрузке базы данных {DATABASE_NAME}")
-                        return False
-                else:
-                    print(f"Ошибка при удалении базы данных {DATABASE_NAME}")
-                    return False
-                print(f"Для работы {LAB_WORK.upper()}, студента {NAME.title()}, установлен статус {new_status}")
-                return True
-            else:
-                await delete_file(DATABASE_NAME=DATABASE_NAME)
-                print("Работа уже принята")
-                return True
-        except:
+        student = df[df["Name"] == NAME.title()]
+        if student[LAB_WORK.upper()].values[0] != "Принято" and student[LAB_WORK.upper()].values[0] != "принято" and \
+                student[LAB_WORK.upper()].values[0] != "прин":
+            df.loc[(df["Name"] == NAME.title()), LAB_WORK.upper()] = new_status
+            _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+            var = await delete_database(DATABASE_NAME=DATABASE_NAME)
+            if not var:
+                print("Не удалось удалить базу данных")
+                return "Данные редактируются преподавателем, попробуйте позже"
+            await upload_database(DATABASE_NAME=DATABASE_NAME)
             await delete_file(DATABASE_NAME=DATABASE_NAME)
-            raise MyError(f"Ошибка при смене статуса на {new_status}")
+            return f"Для работы {LAB_WORK.upper()}, студента {NAME.title()}, установлен статус {new_status}"
+        else:
+            await delete_file(DATABASE_NAME=DATABASE_NAME)
+            return "Работа уже принята"
 
 
 async def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRAM_ID: int) -> bool:
@@ -271,33 +265,38 @@ async def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRA
     :param NEW_TELEGRAM_ID: новый Telegram ID студента
     :return: True, если Telegram ID изменён, или не нуждается в изменении; False, если студент не найден
     """
-    await download_database(DATABASE_NAME=DATABASE_NAME)
-    df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    var = await download_database(DATABASE_NAME=DATABASE_NAME)
+    if not var:
+        print("База данных не найдена")
+        return False
+    try:
+        df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    except:
+        return False
     if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
         await delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
     else:
         try:
-            OLD_TELEGRAM_ID = df.loc[(df["Name"] == NAME.title()), "Telegram ID"].values[0]
+            try:
+                OLD_TELEGRAM_ID = df.loc[(df["Name"] == NAME.title()), "Telegram ID"].values[0]
+            except:
+                print("Проблема со старым Telegram ID")
+                return False
             if OLD_TELEGRAM_ID != NEW_TELEGRAM_ID:
                 df.loc[(df["Name"] == NAME.title()), "Telegram ID"] = NEW_TELEGRAM_ID
                 _save_excel_bd(DF=df, DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
-                if await delete_database(DATABASE_NAME=DATABASE_NAME):
-                    time.sleep(10)
-                    if await upload_database(DATABASE_NAME=DATABASE_NAME):
-                        time.sleep(10)
-                        await delete_file(DATABASE_NAME=DATABASE_NAME)
-                    else:
-                        print(f"Ошибка при загрузке базы данных {DATABASE_NAME}")
-                        return False
-                else:
-                    print(f"Ошибка при удалении базы данных {DATABASE_NAME}")
+                var = await delete_database(DATABASE_NAME=DATABASE_NAME)
+                if not var:
+                    print("Не удалось удалить базу данных")
                     return False
-                print(f"Telegram ID студента {NAME.title()} изменён")
+                await upload_database(DATABASE_NAME=DATABASE_NAME)
+                await delete_file(DATABASE_NAME=DATABASE_NAME)
+                # print(f"Telegram ID студента {NAME.title()} изменён")
                 return True
             else:
                 await delete_file(DATABASE_NAME=DATABASE_NAME)
-                print(f"Telegram ID студента {NAME.title()} не нуждается в изменении")
+                # print(f"Telegram ID студента {NAME.title()} не нуждается в изменении")
                 return True
         except:
             await delete_file(DATABASE_NAME=DATABASE_NAME)
@@ -312,66 +311,25 @@ async def check_status(DATABASE_NAME: str, GROUP: str, NAME: str):
     :return: Возвращает словарь со статусами лабораторных работ и общим количеством баллов; False, если студент не найден
     """
     await download_database(DATABASE_NAME=DATABASE_NAME)
-    df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    try:
+        df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    except:
+        return "Возможен ввод некорректных данных, попробуйте снова"
     if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
         await delete_file(DATABASE_NAME=DATABASE_NAME)
-        return False
+        return "Студент не найден"
     else:
         try:
             student = df[df["Name"] == NAME.title()]
             status = {}
+            text = "Всего работ:\n"
             for i in range(1, _kolvo_lab(DF=df) + 1):
                 status[f"ЛР{i}"] = student[f"ЛР{i}"].values[0]
+                text += "ЛР" + str(i) + " " + str(student[f"ЛР{i}"].values[0]) + "\n"
+            text += "Всего баллов: " + str(_show_me_my_points(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME))
             status["Баллы"] = _show_me_my_points(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME)
             await delete_file(DATABASE_NAME=DATABASE_NAME)
-            print(f"Статус работ студента {NAME.title()}: {status}")
-            return status
+            return text
         except:
             await delete_file(DATABASE_NAME=DATABASE_NAME)
             raise MyError("Ошибка при отображении статуса работы")
-
-
-async def find_by_telegram_id(DATABASE_NAME: str, TELEGRAM_ID: int):
-    """
-    :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
-    :param TELEGRAM_ID: Telegram ID студента
-    :return: Возвращает список с именем студента(0) и его грппой(1); False, если студент не найден
-    """
-    await download_database(DATABASE_NAME=DATABASE_NAME)
-    df = pd.read_excel(DATABASE_NAME, sheet_name=None)
-    results = []
-    for sheet_name, data in df.items():
-        if "Name" in data.columns and "Telegram ID" in data.columns:
-            filtered_df = data[data["Telegram ID"] == TELEGRAM_ID]
-            if not filtered_df.empty:
-                student_name = filtered_df.iloc[0]["Name"]
-                results.append(student_name)
-                results.append(sheet_name)
-    if results:
-        print(f"Студент {results[0]} найден в группе {results[1]}")
-        await delete_file(DATABASE_NAME=DATABASE_NAME)
-        return results
-    else:
-        print("Студент не найден по заданному Telegram ID")
-        await delete_file(DATABASE_NAME=DATABASE_NAME)
-        return False
-
-
-async def check_github(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
-    await download_database(DATABASE_NAME=DATABASE_NAME)
-    df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
-    if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
-        await delete_file(DATABASE_NAME=DATABASE_NAME)
-        return False
-    else:
-        try:
-            link = str(df.loc[(df["Name"] == NAME.title()), "GitHub"])
-            if len(link.split("/")) > 1:
-                await delete_file(DATABASE_NAME=DATABASE_NAME)
-                return True
-            else:
-                await delete_file(DATABASE_NAME=DATABASE_NAME)
-                return False
-        except:
-            await delete_file(DATABASE_NAME=DATABASE_NAME)
-            raise MyError("Ошибка при проверке GitHub")
