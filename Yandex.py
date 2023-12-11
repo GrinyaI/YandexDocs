@@ -9,9 +9,9 @@ nest_asyncio.apply()
 
 async def download_database(DATABASE_NAME: str) -> bool:
     """
-    Функция скачивает базу данных с Яндекс Диска
-    :param DATABASE_NAME: Имя скачиваемой базы данных
-    :return: True, при успешном скачивании файла с диска; False, при ошибке и выводит в консоль код ошибки
+        Функция скачивает базу данных с Яндекс Диска
+        :param DATABASE_NAME: Имя скачиваемой базы данных
+        :return: True, при успешном скачивании файла с диска; False, при ошибке и выводит в консоль код ошибки
     """
     try:
         url = "https://cloud-api.yandex.net/v1/disk/resources/download"
@@ -38,10 +38,10 @@ async def download_database(DATABASE_NAME: str) -> bool:
 
 async def upload_database(DATABASE_NAME: str) -> bool:
     """
-    Функция загружает базу данных на Яндекс Диск
-    :param DATABASE_NAME: Имя загружаемой базы данных (обязательно должна лежать в той же папке, что и код)
-    :return: True, при успешной загрузке файла на диск; False, при ошибке и выводит в консоль код ошибки, или если база
-    данных редактируется преподавателем
+        Функция загружает базу данных на Яндекс Диск
+        :param DATABASE_NAME: Имя загружаемой базы данных (обязательно должна лежать в той же папке, что и код)
+        :return: True, при успешной загрузке файла на диск; False, при ошибке и выводит в консоль код ошибки, или если база
+        данных редактируется преподавателем
     """
     try:
         url = "https://cloud-api.yandex.net/v1/disk/resources/upload"
@@ -70,10 +70,10 @@ async def upload_database(DATABASE_NAME: str) -> bool:
 
 async def delete_database(DATABASE_NAME: str) -> bool:
     """
-    Функция удаляет базу данных с Яндекс Диска
-    :param DATABASE_NAME: Имя удаляемой базы данных
-    :return: True, при успешном удалении файла с диска; False, при ошибке и выводит в консоль код ошибки, или если база
-    данных редактируется преподавателем
+        Функция удаляет базу данных с Яндекс Диска
+        :param DATABASE_NAME: Имя удаляемой базы данных
+        :return: True, при успешном удалении файла с диска; False, при ошибке и выводит в консоль код ошибки, или если база
+        данных редактируется преподавателем
     """
     try:
         url = "https://cloud-api.yandex.net/v1/disk/resources?force_async=true&permanently=true"
@@ -96,9 +96,9 @@ async def delete_database(DATABASE_NAME: str) -> bool:
 
 async def delete_file(DATABASE_NAME: str) -> bool:
     """
-    Функция удаляет временную базу данных необходимую для работы кода
-    :param DATABASE_NAME: Имя удаляемой базы данных (обязательно должна лежать в той же папке, что и код)
-    :return: True, при успешном удалении локального файла; False, при ошибке и выводит в консоль код ошибки
+        Функция удаляет временную базу данных необходимую для работы кода
+        :param DATABASE_NAME: Имя удаляемой базы данных (обязательно должна лежать в той же папке, что и код)
+        :return: True, при успешном удалении локального файла; False, при ошибке и выводит в консоль код ошибки
     """
     try:
         os.remove(DATABASE_NAME)
