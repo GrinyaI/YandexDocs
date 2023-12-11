@@ -129,7 +129,11 @@ def _find_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
 
 
 async def kolvo_lab(DATABASE_NAME: str, GROUP: str) -> int:
-    await download_database(DATABASE_NAME=DATABASE_NAME)
+    var = await download_database(DATABASE_NAME=DATABASE_NAME)
+    if not var:
+        print("База данных не найдена")
+        await delete_file(DATABASE_NAME=DATABASE_NAME)
+        return False
     df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     kolvo = _kolvo_lab(DF=df)
     await delete_file(DATABASE_NAME=DATABASE_NAME)
@@ -146,6 +150,7 @@ async def authorization_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bo
     var = await download_database(DATABASE_NAME=DATABASE_NAME)
     if not var:
         print("База данных не найдена")
+        await delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
     if _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
         await delete_file(DATABASE_NAME=DATABASE_NAME)
@@ -168,6 +173,7 @@ async def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str
     try:
         df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     except:
+        await delete_file(DATABASE_NAME=DATABASE_NAME)
         return "Возможен ввод некорректных данных, попробуйте снова"
     if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
         await delete_file(DATABASE_NAME=DATABASE_NAME)
@@ -182,6 +188,7 @@ async def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str
                     var = await delete_database(DATABASE_NAME=DATABASE_NAME)
                     if not var:
                         print("Не удалось удалить базу данных")
+                        await delete_file(DATABASE_NAME=DATABASE_NAME)
                         return "Данные редактируются преподавателем, попробуйте позже"
                     await upload_database(DATABASE_NAME=DATABASE_NAME)
                     await delete_file(DATABASE_NAME=DATABASE_NAME)
@@ -233,6 +240,7 @@ async def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: 
     var = await download_database(DATABASE_NAME=DATABASE_NAME)
     if not var:
         print("База данных не найдена")
+        await delete_file(DATABASE_NAME=DATABASE_NAME)
         return "Данные редактируются, попробуйте позже"
     df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
@@ -248,6 +256,7 @@ async def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: 
             var = await delete_database(DATABASE_NAME=DATABASE_NAME)
             if not var:
                 print("Не удалось удалить базу данных")
+                await delete_file(DATABASE_NAME=DATABASE_NAME)
                 return "Данные редактируются преподавателем, попробуйте позже"
             await upload_database(DATABASE_NAME=DATABASE_NAME)
             await delete_file(DATABASE_NAME=DATABASE_NAME)
@@ -268,10 +277,12 @@ async def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRA
     var = await download_database(DATABASE_NAME=DATABASE_NAME)
     if not var:
         print("База данных не найдена")
+        await delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
     try:
         df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     except:
+        await delete_file(DATABASE_NAME=DATABASE_NAME)
         return False
     if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
         await delete_file(DATABASE_NAME=DATABASE_NAME)
@@ -282,6 +293,7 @@ async def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRA
                 OLD_TELEGRAM_ID = df.loc[(df["Name"] == NAME.title()), "Telegram ID"].values[0]
             except:
                 print("Проблема со старым Telegram ID")
+                await delete_file(DATABASE_NAME=DATABASE_NAME)
                 return False
             if OLD_TELEGRAM_ID != NEW_TELEGRAM_ID:
                 df.loc[(df["Name"] == NAME.title()), "Telegram ID"] = NEW_TELEGRAM_ID
@@ -289,6 +301,7 @@ async def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRA
                 var = await delete_database(DATABASE_NAME=DATABASE_NAME)
                 if not var:
                     print("Не удалось удалить базу данных")
+                    await delete_file(DATABASE_NAME=DATABASE_NAME)
                     return False
                 await upload_database(DATABASE_NAME=DATABASE_NAME)
                 await delete_file(DATABASE_NAME=DATABASE_NAME)
@@ -314,6 +327,7 @@ async def check_status(DATABASE_NAME: str, GROUP: str, NAME: str):
     try:
         df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
     except:
+        await delete_file(DATABASE_NAME=DATABASE_NAME)
         return "Возможен ввод некорректных данных, попробуйте снова"
     if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
         await delete_file(DATABASE_NAME=DATABASE_NAME)

@@ -2,5 +2,6 @@
 venv/
 
 main.py
+CONFIG.py
 
 ОПД.xlsx
