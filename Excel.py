@@ -305,11 +305,11 @@ async def set_telegram_id(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_TELEGRA
                     return False
                 await upload_database(DATABASE_NAME=DATABASE_NAME)
                 await delete_file(DATABASE_NAME=DATABASE_NAME)
-                # print(f"Telegram ID студента {NAME.title()} изменён")
+                print(f"Telegram ID студента {NAME.title()} изменён")
                 return True
             else:
                 await delete_file(DATABASE_NAME=DATABASE_NAME)
-                # print(f"Telegram ID студента {NAME.title()} не нуждается в изменении")
+                print(f"Telegram ID студента {NAME.title()} не нуждается в изменении")
                 return True
         except:
             await delete_file(DATABASE_NAME=DATABASE_NAME)
