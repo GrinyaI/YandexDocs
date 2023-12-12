@@ -128,6 +128,30 @@ def _find_student(DATABASE_NAME: str, GROUP: str, NAME: str) -> bool:
         raise MyError("Ошибка при поиске студента")
 
 
+def _show_me_my_points(DATABASE_NAME: str, GROUP: str, NAME: str):
+    """
+    :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
+    :param GROUP: имя группы в формате "ПИН-221"
+    :param NAME: имя студента в формате "Фролов Григорий"
+    :return: Возвращает кол-во баллов студента; False, если студент не найден
+    """
+    df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
+    if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
+        return False
+    else:
+        try:
+            points = 0
+            student = df[df["Name"] == NAME.title()]
+            set_points = 60 / _kolvo_lab(DF=df)
+            for i in range(1, _kolvo_lab(DF=df) + 1):
+                if student[f"ЛР{i}"].values[0] == "Принято" or student[f"ЛР{i}"].values[0] == "принято" or \
+                        student[f"ЛР{i}"].values[0] == "прин":
+                    points += int(set_points)
+            return points
+        except:
+            raise MyError("Ошибка при отображении баллов")
+
+
 async def kolvo_lab(DATABASE_NAME: str, GROUP: str) -> int:
     var = await download_database(DATABASE_NAME=DATABASE_NAME)
     if not var:
@@ -203,30 +227,6 @@ async def change_github(DATABASE_NAME: str, GROUP: str, NAME: str, NEW_LINK: str
         else:
             await delete_file(DATABASE_NAME=DATABASE_NAME)
             return f"Ссылка на GitHub студента {NAME.title()} указана неверно"
-
-
-def _show_me_my_points(DATABASE_NAME: str, GROUP: str, NAME: str):
-    """
-    :param DATABASE_NAME: имя базы данных в формате "ОПД.xlsx"
-    :param GROUP: имя группы в формате "ПИН-221"
-    :param NAME: имя студента в формате "Фролов Григорий"
-    :return: Возвращает кол-во баллов студента; False, если студент не найден
-    """
-    df = _read_excel_bd(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP)
-    if not _find_student(DATABASE_NAME=DATABASE_NAME, GROUP=GROUP, NAME=NAME):
-        return False
-    else:
-        try:
-            points = 0
-            student = df[df["Name"] == NAME.title()]
-            set_points = 60 / _kolvo_lab(DF=df)
-            for i in range(1, _kolvo_lab(DF=df) + 1):
-                if student[f"ЛР{i}"].values[0] == "Принято" or student[f"ЛР{i}"].values[0] == "принято" or \
-                        student[f"ЛР{i}"].values[0] == "прин":
-                    points += int(set_points)
-            return points
-        except:
-            raise MyError("Ошибка при отображении баллов")
 
 
 async def set_status_ready_for_inspection(DATABASE_NAME: str, GROUP: str, NAME: str, LAB_WORK: str) -> str:
